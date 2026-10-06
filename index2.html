@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Dough & Sauce Master PWA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        * { -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-200">
+
+    <div id="cooking-mode-banner" class="hidden fixed top-0 left-0 right-0 z-50 bg-amber-600 text-white px-4 py-2 text-center text-xs sm:text-sm font-semibold shadow-lg flex items-center justify-center gap-2 animate-pulse">
+        <i data-lucide="sun" class="w-4 h-4"></i>
+        <span>COOKING MODE ACTIVE — Screen wake lock enabled. Your screen will remain on.</span>
+        <button onclick="toggleCookingMode()" class="ml-4 bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded text-xs uppercase tracking-wider">Exit</button>
+    </div>
+
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-amber-500 text-white p-2.5 sm:p-3 rounded-2xl shadow-md shadow-amber-500/20">
+                    <i data-lucide="pizza" class="w-6 h-6 sm:w-7 sm:h-7"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-xl font-bold tracking-tight">Pizza Master</h1>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Dough & Sauce Calculator</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <button onclick="toggleCookingMode()" id="cooking-mode-btn" class="flex items-center space-x-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-300 transition-all">
+                    <i data-lucide="coffee" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Cooking Mode</span>
+                </button>
+
+                <nav class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                    <button onclick="switchTab('dough')" id="btn-dough" class="px-3 sm:px-5 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 bg-white dark:bg-slate-700 shadow-sm text-amber-600 dark:text-amber-400">
+                        Dough
+                    </button>
+                    <button onclick="switchTab('sauce')" id="btn-sauce" class="px-3 sm:px-5 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200">
+                        Sauce
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-container" class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 transition-all duration-300">
+        
+        <!-- ================= DOUGH TAB ================= -->
+        <div id="view-dough" class="space-y-6 sm:space-y-8">
+            <!-- Card 1: Style & Controls -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-7 md:p-8 shadow-sm space-y-5 sm:space-y-6 transition-all">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xs sm:text-sm font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                        <i data-lucide="layers" class="w-4 h-4 sm:w-5 sm:h-5"></i> Select Pizza Style
+                    </h2>
+                    <span id="dough-ball-weight-badge" class="text-xs sm:text-sm bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 font-medium px-3 py-1 rounded-full border border-amber-200 dark:border-amber-900/50">
+                        Ball Weight: 260g
+                    </span>
+                </div>
+
+                <div id="dough-styles-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                    <!-- Populated dynamically via JS -->
+                </div>
+
+                <hr class="border-slate-100 dark:border-slate-800">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div class="space-y-2.5">
+                        <div class="flex justify-between items-center">
+                            <label for="dough-count" class="text-sm sm:text-base font-medium text-slate-700 dark:text-slate-300">Number of Dough Balls</label>
+                            <span id="dough-count-display" class="font-bold text-amber-600 dark:text-amber-400 text-lg sm:text-xl">2</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input type="range" id="dough-range" min="1" max="20" value="2" class="w-full accent-amber-500 cursor-pointer h-2 bg-slate-200 dark:bg-slate-700 rounded-lg" oninput="updateDoughCount(this.value)">
+                            <input type="number" id="dough-count" min="1" max="100" value="2" class="w-20 text-center bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2 text-sm sm:text-base font-bold focus:outline-none focus:ring-2 focus:ring-amber-500" onchange="updateDoughCount(this.value)">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2.5">
+                        <label class="text-sm sm:text-base font-medium text-slate-700 dark:text-slate-300">Measurement Unit</label>
+                        <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                            <button onclick="setUnit('metric')" id="unit-metric" class="flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 shadow-sm transition-all">Grams (g)</button>
+                            <button onclick="setUnit('imperial')" id="unit-imperial" class="flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg text-slate-500 dark:text-slate-400 transition-all">Ounces (oz)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Ingredients Breakdown -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-7 md:p-8 shadow-sm space-y-5 sm:space-y-6 transition-all">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                        <i data-lucide="scale" class="w-4 h-4 sm:w-5 sm:h-5"></i> Ingredient Weight Breakdown
+                    </h3>
+                    <span id="total-batch-weight" class="text-xs sm:text-sm text-slate-400 font-medium">Total Batch: 520g</span>
+                </div>
+
+                <div id="dough-ingredients-list" class="divide-y divide-slate-100 dark:divide-slate-800">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Card 3: Instructions Collapsible -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden transition-all">
+                <button onclick="toggleDoughInstructions()" class="w-full p-5 sm:p-7 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <div class="flex items-center space-x-3.5">
+                        <div class="bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 p-2.5 rounded-2xl">
+                            <i data-lucide="book-open" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+                        </div>
+                        <div>
+                            <h3 id="instructions-title-name" class="font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-100">Preparation Instructions</h3>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Step-by-step mixing, kneading, and proofing guide</p>
+                        </div>
+                    </div>
+                    <i id="dough-instr-icon" data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-200"></i>
+                </button>
+                <div id="dough-instructions-content" class="hidden px-5 sm:px-7 pb-7 pt-2 border-t border-slate-100 dark:border-slate-800 space-y-4">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SAUCE TAB ================= -->
+        <div id="view-sauce" class="space-y-6 sm:space-y-8 hidden">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-7 md:p-8 shadow-sm space-y-5 sm:space-y-6 transition-all">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xs sm:text-sm font-semibold uppercase tracking-wider text-red-600 dark:text-red-400 flex items-center gap-2">
+                        <i data-lucide="utensils" class="w-4 h-4 sm:w-5 sm:h-5"></i> Select Sauce Recipe
+                    </h2>
+                    <span class="text-xs sm:text-sm bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-300 font-medium px-3 py-1 rounded-full border border-red-200 dark:border-red-900/50">
+                        Batch Yield Included
+                    </span>
+                </div>
+
+                <div id="sauce-styles-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+            <div id="sauce-detail-container" class="space-y-6 sm:space-y-8">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const doughStyles = [
+            {
+                id: 'ny',
+                name: 'NY Style Pizza',
+                badge: 'Classic Foldable',
+                ballWeight: 260,
+                bakers: {
+                    breadFlour: 100,
+                    water: 60,
+                    sugar: 2.0,
+                    salt: 2.0,
+                    oliveOil: 2.0,
+                    instantYeast: 0.4,
+                    diastaticMalt: 0.5
+                },
+                instructions: [
+                    "Add flour to a stand mixer bowl and add water. cover with a towel and allow to autolyse for 20 minutes.",
+                    "Add the remaining ingredients and run the stand mixer on low with dough hook for 8 minutes.",
+                    "On a clean surface, knead the dough - stretching and folding over itself 3-4 times. The dough should get smoother.",
+                    "Weigh the dough and divide into equal ports corresponding to the dough ball count - (~260 grams each).",
+                    "Round each piece into a tight, smooth ball.",
+                    "Place dough balls on an oiled tray or individual lightly-oiled containers, cover tightly, and refrigerate for 24 to 48 hours for slow cold fermentation.",
+                    "Take out the pizza dough about 2 hours prior to planned baking time. Stretch into an 11-inch pie.",
+                    "To bake, preheat oven with a baking stone to 450F. Bake for about 8-9 minutes or until desired level of crust browning is reached."
+                ]
+            },
+            {
+                id: 'whole_wheat',
+                name: 'Whole Wheat Pizza',
+                badge: 'Nutty & Hearty',
+                ballWeight: 260,
+                bakers: {
+                    breadFlour: 60,
+                    wholeWheatFlour: 40,
+                    water: 62,
+                    instantYeast: 0.5,
+                    salt: 2,
+                    sugar: 2.0,
+                    oliveOil: 2.0,
+                    diastaticMalt: 0.5
+                },
+                instructions: [
+                    "Add flour to a stand mixer bowl and add water. cover with a towel and allow to autolyse for 30 minutes.",
+                    "Add the remaining ingredients and run the stand mixer on low with dough hook for 8 minutes.",
+                    "On a clean surface, knead the dough - stretching and folding over itself 3-4 times. The dough should get smoother.",
+                    "Weigh the dough and divide into equal ports corresponding to the dough ball count - (~260 grams each).",
+                    "Round each piece into a tight, smooth ball.",
+                    "Place dough balls on an oiled tray or individual lightly-oiled containers, cover tightly, and refrigerate for 24 to 48 hours for slow cold fermentation.",
+                    "Take out the pizza dough about 2 hours prior to planned baking time. Stretch into an 11-inch pie.",
+                    "To bake, preheat oven with a baking stone to 450F. Bake for about 8-9 minutes or until desired level of crust browning is reached."
+                ]
+            },
+            {
+                id: 'detroit',
+                name: 'Detroit Style Pizza',
+                badge: 'Pan Pizza',
+                ballWeight: 308,
+                bakers: {
+                    breadFlour: 100,
+                    water: 65.57,
+                    instantYeast: 0.83,
+                    salt: 2
+                },
+                instructions: [
+                    "Combine all dry ingredients in a stand mixer bowl and run on low with dough hook for 6-8 minutes.",
+                    "Stretch and fold the dough over itself a few times to make a large ball.",
+                    "Cover bowl with plastic wrap and let it sit in a warm spot for 30 minutes.",
+                    "After 30 minutes, stretch and fold the dough a few times again. Repeat this 2-3 times, covering and allowing the dough to rest for 30 minutes each time.",
+                    "Allow the dough to rest for 60 minutes after the last stretch and fold and then put in the fridge for a day or two until the day the pizza is to be made.",
+                    "On the bake day, take the dough out of the fridge at 1 PM (noon if it is a colder day) and allow to sit on the counter for 2 hours (3 on a colder day).",
+                    "Separate the dough if necessary.",
+                    "Put approximately 1 Tbsp of olive oil in the Detroit Pizza Pan and coat the entire pan with the oil using one hand.",
+                    "Place the dough in the pan and gently stretch it out to cover as much of the pan as possible, but no more than around 75 percent.",
+                    "Cover and allow the dough to rest for about 30 minutes.",
+                    "After 30 minutes, stretch the dough out to the edges and allow to rest and rise for 2 hours.",
+                    "45 minutes before the dough is supposed to be ready, begin preheating an oven with a pizza stone at 500F.",
+                    "After two hours, the dough should be touch the pan's edges and be ready to be topped.",
+                    "Put 8 oz of shredded cheese on the dough (4 oz Mozz + 4 oz Monterrey Jack or 8 oz Brick cheese).",
+                    "Add two generous stripes of sauce and then cover with toppings.",
+                    "Bake for 16-18 minutes or until the edges are well done.",
+                    "Remove pizzas from the pan and allow to cool on a rack for 5-6 minutes.",
+                    "Cut into 4 pieces and serve."
+                ]
+            },
+            {
+                id: 'south_shore',
+                name: 'South Shore Bar Style',
+                badge: 'Crispy & Thin',
+                ballWeight: 221,
+                bakers: {
+                    flour: 100,
+                    water: 57,
+                    instantYeast: 0.68,
+                    salt: 1.13,
+                    oliveOil: 4.0,
+                    sugar: 2,
+                },
+                instructions: [
+                    "In a bowl, mix flour, instant yeast, salt, and sugar.",
+                    "Incorporate cold water and vegetable oil or melted shortening.",
+                    "Mix until a stiff, low-hydration dough forms. Do not over-knead.",
+                    "Divide into small 190g dough balls immediately. Round them tightly.",
+                    "Cover and let proof at room temperature for 2 hours, or refrigerate overnight for best crispiness.",
+                    "Roll out thin with a rolling pin to fit directly into an oiled 10-inch round steel pie pan without creating an outer crust rim."
+                ]
+            },
+            {
+                id: 'calzone',
+                name: 'Calzone Dough',
+                badge: 'Pocket Style',
+                ballWeight: 130,
+                bakers: {
+                    breadFlour: 100,
+                    water: 62,
+                    instantYeast: 0.75,
+                    salt: 2,
+                    oliveOil: 3.0,
+                    diastaticMalt: 0.5
+                },
+                instructions: [
+                    "Add all the dry ingredients in the mixing bowl and run the stand mixer with the dough hook for 1 minute to incorporate everything.",
+                    "Add the water and the oil.",
+                    "Briefly knead the dough by hand to ensure it is set.",
+                    "Separate the dough, roll into balls and place in an oiled container.",
+                    "Use later on the same day or put in the fridge to cold ferment.",
+                    "Take out dough 2-3 hours before stretching to ensure it is up to room temp.",
+                    "Stretch by hand with semolina."
+                ]
+            }
+        ];
+
+        const sauceRecipes = [
+            {
+                id: 'regular',
+                name: 'Regular NY Style Sauce',
+                badge: 'Uncooked Fresh Flavor',
+                yield: 'Makes enough for 3-4 pizzas (approx. 400g)',
+                ingredients: [
+                    { name: 'Crushed Tomatoes (Canned, San Marzano style)', amount: '400g (14 oz can)' },
+                    { name: 'Extra Virgin Olive Oil', amount: '1 tbsp' },
+                    { name: 'Fine Sea Salt', amount: '1 tsp' },
+                    { name: 'Dried Oregano', amount: '1/2 tsp' },
+                    { name: 'Garlic Powder', amount: '1/4 tsp' },
+                    { name: 'Black Pepper', amount: '1/4 tsp' },
+                    { name: 'Sugar (optional, to taste)', amount: '1/2 tsp' }
+                ],
+                instructions: [
+                    "Open the can of crushed tomatoes and pour into a medium mixing bowl.",
+                    "Add olive oil, sea salt, dried oregano, garlic powder, black pepper, and sugar.",
+                    "Stir thoroughly until all spices are evenly incorporated.",
+                    "Let the sauce sit at room temperature for 30 minutes to let the flavors meld before spooning onto your dough. No cooking required!"
+                ]
+            },
+            {
+                id: 'detroit',
+                name: 'Detroit Style Sauce',
+                badge: 'Post-Bake Stripe',
+                yield: 'Makes enough for 2 Detroit pans (approx. 450g)',
+                ingredients: [
+                    { name: 'Tomato Puree or Crushed Tomatoes', amount: '400g' },
+                    { name: 'Tomato Paste', amount: '2 tbsp' },
+                    { name: 'Unsalted Butter', amount: '20g' },
+                    { name: 'Olive Oil', amount: '1 tbsp' },
+                    { name: 'Garlic (Minced)', amount: '1 clove' },
+                    { name: 'Dried Basil & Oregano', amount: '1 tsp combined' },
+                    { name: 'Salt & Black Pepper', amount: '3/4 tsp' },
+                    { name: 'Red Pepper Flakes', amount: '1/4 tsp (optional)' }
+                ],
+                instructions: [
+                    "Melt butter and olive oil in a small saucepan over medium heat. Add minced garlic and red pepper flakes, sautéing for 30 seconds until fragrant.",
+                    "Whisk in the tomato paste, crushed tomatoes, dried herbs, salt, and pepper.",
+                    "Simmer gently on low heat for 15-20 minutes until slightly thickened and rich.",
+                    "Unlike traditional sauce, this is typically spooned in characteristic stripes over the pizza *after* it comes out of the oven."
+                ]
+            },
+            {
+                id: 'white',
+                name: 'White Garlic Sauce (Béchamel / Ricotta)',
+                badge: 'Rich & Creamy',
+                yield: 'Makes enough for 2 pizzas',
+                ingredients: [
+                    { name: 'Whole Milk', amount: '200ml' },
+                    { name: 'Butter', amount: '20g' },
+                    { name: 'All-Purpose Flour', amount: '20g (approx 1.5 tbsp)' },
+                    { name: 'Garlic (Minced or Roasted)', amount: '3 cloves' },
+                    { name: 'Ricotta Cheese', amount: '100g' },
+                    { name: 'Parmesan Cheese (Grated)', amount: '30g' },
+                    { name: 'Salt & White Pepper', amount: '1/2 tsp' }
+                ],
+                instructions: [
+                    "In a small saucepan, melt butter over medium heat. Stir in flour and minced garlic, cooking for 1 minute to form a light roux.",
+                    "Gradually whisk in warm whole milk to prevent lumps. Simmer while stirring constantly until the sauce thickens into a smooth cream.",
+                    "Remove from heat and whisk in the ricotta and grated parmesan until completely melted and smooth.",
+                    "Season with salt and white pepper to taste. Let cool slightly before spreading onto dough."
+                ]
+            }
+        ];
+
+        let currentTab = 'dough';
+        let currentDoughId = 'ny';
+        let currentSauceId = 'regular';
+        let doughCount = 2;
+        let measurementUnit = 'metric';
+        let isDoughInstructionsOpen = false;
+        let wakeLock = null;
+        let isCookingModeActive = false;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderDoughStyles();
+            renderDoughCalculator();
+            renderSauceStyles();
+            renderSauceDetail();
+            lucide.createIcons();
+
+            document.addEventListener('visibilitychange', async () => {
+                if (wakeLock !== null && document.visibilityState === 'visible') {
+                    try {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                    } catch (err) {
+                        console.error(`Wake Lock re-acquire failed: ${err.name}, ${err.message}`);
+                    }
+                }
+            });
+        });
+
+        async function toggleCookingMode() {
+            const btn = document.getElementById('cooking-mode-btn');
+            const banner = document.getElementById('cooking-mode-banner');
+            const mainContainer = document.getElementById('main-container');
+
+            if (!isCookingModeActive) {
+                try {
+                    if ('wakeLock' in navigator) {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                        isCookingModeActive = true;
+                        
+                        banner.classList.remove('hidden');
+                        mainContainer.classList.add('text-lg', 'font-medium');
+                        btn.className = "flex items-center space-x-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-amber-500 bg-amber-500 text-white shadow-md shadow-amber-500/20 transition-all";
+                        btn.innerHTML = `<i data-lucide="sun" class="w-4 h-4"></i><span class="hidden sm:inline">Cooking Mode ON</span>`;
+                        
+                        if (!isDoughInstructionsOpen) {
+                            toggleDoughInstructions();
+                        }
+                    } else {
+                        alert('Screen Wake Lock API is not supported in this browser. Your screen may still dim according to system settings.');
+                    }
+                } catch (err) {
+                    console.error(`${err.name}, ${err.message}`);
+                    alert('Could not activate Cooking Mode. Permission denied or battery saver active.');
+                }
+            } else {
+                if (wakeLock !== null) {
+                    try {
+                        await wakeLock.release();
+                        wakeLock = null;
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+                isCookingModeActive = false;
+                banner.classList.add('hidden');
+                mainContainer.classList.remove('text-lg', 'font-medium');
+                btn.className = "flex items-center space-x-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-300 transition-all";
+                btn.innerHTML = `<i data-lucide="coffee" class="w-4 h-4"></i><span class="hidden sm:inline">Cooking Mode</span>`;
+            }
+            lucide.createIcons();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const btnDough = document.getElementById('btn-dough');
+            const btnSauce = document.getElementById('btn-sauce');
+            const viewDough = document.getElementById('view-dough');
+            const viewSauce = document.getElementById('view-sauce');
+
+            if (tab === 'dough') {
+                btnDough.className = "px-3 sm:px-5 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 bg-white dark:bg-slate-700 shadow-sm text-amber-600 dark:text-amber-400";
+                btnSauce.className = "px-3 sm:px-5 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200";
+                viewDough.classList.remove('hidden');
+                viewSauce.classList.add('hidden');
+            } else {
+                btnSauce.className = "px-3 sm:px-5 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 bg-white dark:bg-slate-700 shadow-sm text-red-600 dark:text-red-400";
+                btnDough.className = "px-3 sm:px-5 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200";
+                viewSauce.classList.remove('hidden');
+                viewDough.classList.add('hidden');
+            }
+            lucide.createIcons();
+        }
+
+        function renderDoughStyles() {
+            const grid = document.getElementById('dough-styles-grid');
+            grid.innerHTML = doughStyles.map(style => {
+                const isSelected = style.id === currentDoughId;
+                return `
+                    <button onclick="selectDoughStyle('${style.id}')" class="p-3.5 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border text-left transition-all flex flex-col justify-between group ${isSelected ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 shadow-md ring-2 ring-amber-500' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'}">
+                        <div>
+                            <span class="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">${style.badge}</span>
+                            <h3 class="font-semibold text-xs sm:text-sm mt-1 leading-snug">${style.name}</h3>
+                        </div>
+                        <span class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-4 block">${style.ballWeight}g ball</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectDoughStyle(id) {
+            currentDoughId = id;
+            renderDoughStyles();
+            renderDoughCalculator();
+        }
+
+        function updateDoughCount(val) {
+            let parsed = parseInt(val);
+            if (isNaN(parsed) || parsed < 1) parsed = 1;
+            if (parsed > 100) parsed = 100;
+            doughCount = parsed;
+            document.getElementById('dough-range').value = doughCount;
+            document.getElementById('dough-count').value = doughCount;
+            document.getElementById('dough-count-display').innerText = doughCount;
+            renderDoughCalculator();
+        }
+
+        function setUnit(unit) {
+            measurementUnit = unit;
+            const btnMetric = document.getElementById('unit-metric');
+            const btnImperial = document.getElementById('unit-imperial');
+            if (unit === 'metric') {
+                btnMetric.className = "flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 shadow-sm transition-all";
+                btnImperial.className = "flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg text-slate-500 dark:text-slate-400 transition-all";
+            } else {
+                btnImperial.className = "flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 shadow-sm transition-all";
+                btnMetric.className = "flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg text-slate-500 dark:text-slate-400 transition-all";
+            }
+            renderDoughCalculator();
+        }
+
+        function formatWeight(grams) {
+            if (measurementUnit === 'metric') {
+                return `${Math.round(grams * 10) / 10}g`;
+            } else {
+                const oz = grams / 28.3495;
+                if (oz < 0.1) return `${(grams * 0.035274).toFixed(2)} oz`;
+                return `${oz.toFixed(2)} oz`;
+            }
+        }
+
+        function renderDoughCalculator() {
+            const style = doughStyles.find(s => s.id === currentDoughId);
+            document.getElementById('dough-ball-weight-badge').innerText = `Ball Weight: ${formatWeight(style.ballWeight)}`;
+            
+            const totalDoughWeight = doughCount * style.ballWeight;
+            const percentages = style.bakers;
+            const totalPercentage = Object.values(percentages).reduce((acc, val) => acc + val, 0);
+            const flourWeight = totalDoughWeight / (totalPercentage / 100);
+
+            document.getElementById('total-batch-weight').innerText = `Total Batch: ${formatWeight(totalDoughWeight)}`;
+            document.getElementById('instructions-title-name').innerText = `${style.name} Preparation Instructions`;
+
+            const listEl = document.getElementById('dough-ingredients-list');
+            let ingredientsHTML = '';
+
+            const ingredientLabels = {
+                flour: 'All-Purpose',
+                breadFlour: 'Bread Flour',
+                wholeWheatFlour: 'Whole Wheat Flour',
+                water: 'Water (Lukewarm)',
+                instantYeast: 'Instant Yeast',
+                salt: 'Fine Sea Salt',
+                sugar: 'Sugar',
+                honey: 'Honey',
+                oliveOil: 'Extra Virgin Olive Oil',
+                diastaticMalt: 'Diastatic Malt Powder (Optional)',
+                criscoOrOil: 'Shortening / Vegetable Oil'
+            };
+
+            for (const [key, pct] of Object.entries(percentages)) {
+                const ingredientGrams = (flourWeight * pct) / 100;
+                const label = ingredientLabels[key] || key;
+                ingredientsHTML += `
+                    <div class="py-3.5 sm:py-4 flex items-center justify-between">
+                        <div>
+                            <div class="font-medium text-sm sm:text-base text-slate-800 dark:text-slate-200">${label}</div>
+                            <div class="text-xs sm:text-sm text-slate-400">Baker's %: ${pct}%</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-amber-600 dark:text-amber-400 text-base sm:text-lg">${formatWeight(ingredientGrams)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            listEl.innerHTML = ingredientsHTML;
+
+            const instrContent = document.getElementById('dough-instructions-content');
+            instrContent.innerHTML = `
+                <ol class="space-y-3.5 sm:space-y-4">
+                    ${style.instructions.map((step, idx) => `
+                        <li class="flex items-start space-x-3.5 text-sm sm:text-base text-slate-600 dark:text-slate-300">
+                            <span class="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold text-xs sm:text-sm flex items-center justify-center">${idx + 1}</span>
+                            <span class="flex-1 mt-0.5">${step}</span>
+                        </li>
+                    `).join('')}
+                </ol>
+            `;
+            lucide.createIcons();
+        }
+
+        function toggleDoughInstructions() {
+            isDoughInstructionsOpen = !isDoughInstructionsOpen;
+            const content = document.getElementById('dough-instructions-content');
+            const icon = document.getElementById('dough-instr-icon');
+            if (isDoughInstructionsOpen) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function renderSauceStyles() {
+            const grid = document.getElementById('sauce-styles-grid');
+            grid.innerHTML = sauceRecipes.map(sauce => {
+                const isSelected = sauce.id === currentSauceId;
+                return `
+                    <button onclick="selectSauceStyle('${sauce.id}')" class="p-4 sm:p-5 rounded-xl sm:rounded-2xl border text-left transition-all flex flex-col justify-between group ${isSelected ? 'border-red-500 bg-red-50/50 dark:bg-red-950/30 text-red-900 dark:text-red-200 shadow-md ring-2 ring-red-500' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'}">
+                        <div>
+                            <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-red-600 dark:text-red-400 block">${sauce.badge}</span>
+                            <h3 class="font-semibold text-sm sm:text-base mt-1 leading-snug">${sauce.name}</h3>
+                        </div>
+                        <span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-4 flex items-center gap-1">
+                            <i data-lucide="info" class="w-3.5 h-3.5"></i> ${sauce.yield.split(' ')[0]} batch
+                        </span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectSauceStyle(id) {
+            currentSauceId = id;
+            renderSauceStyles();
+            renderSauceDetail();
+        }
+
+        function renderSauceDetail() {
+            const sauce = sauceRecipes.find(s => s.id === currentSauceId);
+            const container = document.getElementById('sauce-detail-container');
+
+            container.innerHTML = `
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-7 md:p-8 shadow-sm space-y-5 sm:space-y-6 transition-all">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                            <i data-lucide="list-checks" class="w-4 h-4 sm:w-5 sm:h-5"></i> ${sauce.name} Ingredients
+                        </h3>
+                        <span class="text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium px-3 py-1 rounded-full">
+                            ${sauce.yield}
+                        </span>
+                    </div>
+
+                    <div class="divide-y divide-slate-100 dark:divide-slate-800">
+                        ${sauce.ingredients.map(ing => `
+                            <div class="py-3.5 sm:py-4 flex items-center justify-between">
+                                <span class="font-medium text-sm sm:text-base text-slate-800 dark:text-slate-200">${ing.name}</span>
+                                <span class="font-bold text-red-600 dark:text-red-400 text-sm sm:text-base">${ing.amount}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-7 md:p-8 shadow-sm space-y-5 sm:space-y-6 transition-all">
+                    <h3 class="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                        <i data-lucide="list-ordered" class="w-4 h-4 sm:w-5 sm:h-5"></i> Preparation Steps
+                    </h3>
+                    <ol class="space-y-3.5 sm:space-y-4 pt-1">
+                        ${sauce.instructions.map((step, idx) => `
+                            <li class="flex items-start space-x-3.5 text-sm sm:text-base text-slate-600 dark:text-slate-300">
+                                <span class="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-semibold text-xs sm:text-sm flex items-center justify-center">${idx + 1}</span>
+                                <span class="flex-1 mt-0.5">${step}</span>
+                            </li>
+                        `).join('')}
+                    </ol>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
