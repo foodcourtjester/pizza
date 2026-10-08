@@ -384,45 +384,42 @@
         });
 
         async function toggleCookingMode() {
-            const btn = document.getElementById('cooking-mode-btn');
-                        const mainContainer = document.getElementById('main-container');
+    const btn = document.getElementById('cooking-mode-btn');
 
-            if (!isCookingModeActive) {
-                try {
-                    if ('wakeLock' in navigator) {
-                        wakeLock = await navigator.wakeLock.request('screen');
-                        isCookingModeActive = true;
-                        
-                                                mainContainer.classList.add('text-lg', 'font-medium');
-                        btn.className = "flex items-center space-x-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-amber-500 bg-amber-500 text-white shadow-md shadow-amber-500/20 transition-all";
-                        btn.innerHTML = `<i data-lucide="sun" class="w-4 h-4"></i><span class="hidden sm:inline">Cooking Mode ON</span>`;
-                        
-                        if (!isDoughInstructionsOpen) {
-                            toggleDoughInstructions();
-                        }
-                    } else {
-                        alert('Screen Wake Lock API is not supported in this browser. Your screen may still dim according to system settings.');
-                    }
-                } catch (err) {
-                    console.error(`${err.name}, ${err.message}`);
-                    alert('Could not activate Cooking Mode. Permission denied or battery saver active.');
+    if (!isCookingModeActive) {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                isCookingModeActive = true;
+                
+                btn.className = "flex items-center space-x-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-amber-500 bg-amber-500 text-white shadow-md shadow-amber-500/20 transition-all";
+                btn.innerHTML = `<i data-lucide="sun" class="w-4 h-4"></i><span class="hidden sm:inline">Cooking Mode ON</span>`;
+                
+                if (!isDoughInstructionsOpen) {
+                    toggleDoughInstructions();
                 }
             } else {
-                if (wakeLock !== null) {
-                    try {
-                        await wakeLock.release();
-                        wakeLock = null;
-                    } catch (err) {
-                        console.error(err);
-                    }
-                }
-                isCookingModeActive = false;
-                                mainContainer.classList.remove('text-lg', 'font-medium');
-                btn.className = "flex items-center space-x-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-300 transition-all";
-                btn.innerHTML = `<i data-lucide="coffee" class="w-4 h-4"></i><span class="hidden sm:inline">Cooking Mode</span>`;
+                alert('Screen Wake Lock API is not supported in this browser. Your screen may still dim according to system settings.');
             }
-            lucide.createIcons();
+        } catch (err) {
+            console.error(`${err.name}, ${err.message}`);
+            alert('Could not activate Cooking Mode. Permission denied or battery saver active.');
         }
+    } else {
+        if (wakeLock !== null) {
+            try {
+                await wakeLock.release();
+                wakeLock = null;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        isCookingModeActive = false;
+        btn.className = "flex items-center space-x-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-300 transition-all";
+        btn.innerHTML = `<i data-lucide="coffee" class="w-4 h-4"></i><span class="hidden sm:inline">Cooking Mode</span>`;
+    }
+    lucide.createIcons();
+}
 
         function switchTab(tab) {
             currentTab = tab;
