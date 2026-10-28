@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pizza-calc-v1.2';
+const CACHE_NAME = 'pizza-calc-v1.3';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
