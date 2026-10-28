@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pizza-calc-v1.3';
+const CACHE_NAME = 'pizza-calc-v1.31';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -20,15 +20,13 @@ self.addEventListener('install', (event) => {
 // Activate Event: Clean up old caches if version changes
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keyList) => {
-      return Promise.all(
-        keyList.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((key) => key.startsWith('pizza-calc-') && key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
+      )
+    )
   );
   self.clients.claim();
 });
