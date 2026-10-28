@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pizza-calc-v1.31';
+const CACHE_NAME = 'pizza-calc-v1.32';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -34,15 +34,8 @@ self.addEventListener('activate', (event) => {
 // Fetch Event: Serve from cache first, fall back to network
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((response) => {
-        return response;
-      }).catch(() => {
-        // Optional: Return a fallback offline page if both cache and network fail
-      });
-    })
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.match(event.request))
+      .then((cachedResponse) => cachedResponse || fetch(event.request))
   );
 });
