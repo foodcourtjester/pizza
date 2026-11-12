@@ -297,6 +297,42 @@
                 ]
             },
             {
+                id: 'chicago',
+                name: 'Chicago Style Pizza',
+                badge: 'Deep Dish Classic',
+                ballWeight: 651,
+                defaultCount: 1,
+                allowWeightToggle: false,
+                bakers: {
+                    flour: 100,
+                    water: 58.67,
+                    butter: 10.67,
+                    salt: 2.67,
+                    instantYeast: 1.6
+                },
+                instructions: [
+                    "In a food processor, add the flour, salt, and cubed cold butter. Run the processor for about 15 seconds, or until the butter has been cut into the flour.",
+                    "Next, in a small bowl, add the water, and mix in the instant yeast.",
+                    "Run the foor processor and slowly add the yeasted water. Allow the processor to run for about a minute, until the dough comes together with a texture somewhere in between a pizza dough and a pie crust.",
+                    "Move the dough to a mixing bowl, and lightly knead into a ball. Cover and allow to ferment at room temperature for about 30 minutes.",
+                    "Put the dough in the fridge to cold ferment for 12-24 hours.",
+                    "Take the dough out of the fridge and allow to sit for 45 minutes.",
+                    "Preheat the oven with a pizza stone to 425F.",
+                    "Take the 12-inch Lloyd's Chicago style pizza pan and add 1 Tbsp of olive oil. Use a paper towel to spread the oil into a thin layer all over the bottom and sides of the pan.",
+                    "Dust a work surface with flour and move the dough onto it. Give it a good pat to degas it.",
+                    " With a rolling pin, roll it out in one direction first. Then, turn the dough 90 degrees and roll it out further, until the dough is approximately 14-inches round",
+                    "Carefully move the dough into the greased pizza pan and pinch/press it up onto the sides and bottom,",
+                    "Place 8 oz of sliced mozzarella all over the bottom of the pizza and then add 4 oz of slice provolone.",
+                    "Next, add 8 oz of Italian sausage.",
+                    "After that, add half of the Chicago-style pizza sauce from the recipe in this app.",
+                    "Next, add about 25 slices of pepperoni on top of that.",
+                    "Finally, dust the top of the pizza with 2 handfuls of grated parmesan.",
+                    "Put the pizza in the oven for 35-40 minutes, by which time the pizza should be lightly golden brown and be pulling away from the edge of the pan.",
+                    "Slide the pizza out of the pan and allow it to cool on a wire rack for 10 minutes.",
+                    "Cut, and serve!",
+                ]
+            },
+            {
                 id: 'south_shore',
                 name: 'South Shore Bar Style',
                 badge: 'Crispy & Thin',
@@ -377,6 +413,34 @@
                 ]
             },
             {
+                id: 'chicago',
+                name: 'Chicago Style Pizza Sauce',
+                badge: 'Rich & Chunky Deep Dish',
+                yield: 'Makes enough for 2-3 Chicago Deep Dish pizzas',
+                ingredients: [
+                    { name: 'Unsalted Butter', amount: '50g' },
+                    { name: 'Grated White Onion', amount: '100g' },
+                    { name: 'Garlic (Crushed)', amount: '5 cloves' },
+                    { name: 'Crushed Tomatoes', amount: '1 can (28 oz / ~794g)' },
+                    { name: 'Whole Peeled Tomatoes', amount: '1 can (28 oz / ~794g)' },
+                    { name: 'Tomato Paste', amount: '75g' },
+                    { name: 'Fine Sea Salt', amount: '10g' },
+                    { name: 'Sugar', amount: '20g' },
+                    { name: 'Dried Oregano', amount: '2g' },
+                    { name: 'Dried Basil', amount: '2g' },
+                    { name: 'Red Chili Pepper Flakes', amount: '2g' }
+                ],
+                instructions: [
+                    "Put a large sauce pan on the stove over medium-high heat and drop in the butter.",
+                    "Add the grated onion and minced garlic. Stir and allow it to sit for 4-5 minutes.",
+                    "In a large mixing bowl, add all the tomatoes and using one's hands, squish the whole peeled tomatoes into approximately half-inch chunks.",
+                    "Then add the remaining ingredients. Stir until everything is combined and add the mixture to the sauce pan.",
+                    "Turn the heat down from medium-high to medium, and cook down for 15-20 minutes, stirring occasionally.",
+                    "Once the sauce is thickened so that sliding a spatula through it leaves the trail for a moment.",
+                    "Turn off the heat, and allow the sauce to cool."
+                ]
+            },
+            {
                 id: 'cooked_ny',
                 name: 'Cooked NY Style Pizza Sauce',
                 badge: 'Rich & Deep Marinara',
@@ -451,7 +515,7 @@
         let currentTab = 'dough';
         let currentDoughId = 'ny';
         let currentSauceId = 'regular';
-        let customBallWeights = { ny: 260, whole_wheat: 260 };
+        let customBallWeight = 260;
         let doughCount = 2;
         let measurementUnit = 'metric';
         let isDoughInstructionsOpen = false;
@@ -535,25 +599,18 @@
             lucide.createIcons();
         }
 
-        function getActiveBallWeight(style) {
-            if (style.allowWeightToggle && customBallWeights[style.id]) {
-                return customBallWeights[style.id];
-            }
-            return style.ballWeight;
-        }
-
         function renderDoughStyles() {
             const grid = document.getElementById('dough-styles-grid');
             grid.innerHTML = doughStyles.map(style => {
                 const isSelected = style.id === currentDoughId;
-                const activeWeight = getActiveBallWeight(style);
+                const effectiveWeight = (style.allowWeightToggle && style.id === currentDoughId) ? customBallWeight : style.ballWeight;
                 return `
                     <button onclick="selectDoughStyle('${style.id}')" class="p-3.5 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border text-left transition-all flex flex-col justify-between group ${isSelected ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 shadow-md ring-2 ring-amber-500' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'}">
                         <div>
                             <span class="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">${style.badge}</span>
                             <h3 class="font-semibold text-xs sm:text-sm mt-1 leading-snug">${style.name}</h3>
                         </div>
-                        <span class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-4 block">${activeWeight}g ball</span>
+                        <span class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-4 block">${effectiveWeight}g ball</span>
                     </button>
                 `;
             }).join('');
@@ -563,9 +620,32 @@
             currentDoughId = id;
             const style = doughStyles.find(s => s.id === id);
             
-            // Set dough count default for specific styles (e.g., Muffin Pan defaults to 1)
-            const targetCount = style.defaultCount || 2;
-            updateDoughCount(targetCount);
+            if (style && style.defaultCount) {
+                doughCount = style.defaultCount;
+            } else {
+                doughCount = 2;
+            }
+            
+            document.getElementById('dough-range').value = doughCount;
+            document.getElementById('dough-count').value = doughCount;
+            document.getElementById('dough-count-display').innerText = doughCount;
+            
+            renderDoughStyles();
+            renderDoughCalculator();
+        }
+
+        function setCustomBallWeight(weight) {
+            customBallWeight = weight;
+            const btn260 = document.getElementById('weight-btn-260');
+            const btn420 = document.getElementById('weight-btn-420');
+
+            if (weight === 260) {
+                btn260.className = "flex-1 sm:flex-none px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-sm transition-all";
+                btn420.className = "flex-1 sm:flex-none px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-400 transition-all";
+            } else {
+                btn420.className = "flex-1 sm:flex-none px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-sm transition-all";
+                btn260.className = "flex-1 sm:flex-none px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-400 transition-all";
+            }
             
             renderDoughStyles();
             renderDoughCalculator();
@@ -580,14 +660,6 @@
             document.getElementById('dough-count').value = doughCount;
             document.getElementById('dough-count-display').innerText = doughCount;
             renderDoughCalculator();
-        }
-
-        function setCustomBallWeight(weight) {
-            if (currentDoughId === 'ny' || currentDoughId === 'whole_wheat') {
-                customBallWeights[currentDoughId] = weight;
-                renderDoughStyles();
-                renderDoughCalculator();
-            }
         }
 
         function setUnit(unit) {
@@ -616,26 +688,16 @@
 
         function renderDoughCalculator() {
             const style = doughStyles.find(s => s.id === currentDoughId);
-            const activeBallWeight = getActiveBallWeight(style);
-
-            // Toggle custom weight selector visibility
-            const weightSelectorContainer = document.getElementById('weight-selector-container');
-            if (style.allowWeightToggle) {
-                weightSelectorContainer.classList.remove('hidden');
-                const btn260 = document.getElementById('weight-btn-260');
-                const btn420 = document.getElementById('weight-btn-420');
-                if (activeBallWeight === 420) {
-                    btn420.className = "flex-1 sm:flex-none px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-sm transition-all";
-                    btn260.className = "flex-1 sm:flex-none px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-400 transition-all";
-                } else {
-                    btn260.className = "flex-1 sm:flex-none px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-sm transition-all";
-                    btn420.className = "flex-1 sm:flex-none px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-400 transition-all";
-                }
-            } else {
-                weightSelectorContainer.classList.add('hidden');
-            }
+            const weightContainer = document.getElementById('weight-selector-container');
             
-            const totalDoughWeight = doughCount * activeBallWeight;
+            if (style.allowWeightToggle) {
+                weightContainer.classList.remove('hidden');
+            } else {
+                weightContainer.classList.add('hidden');
+            }
+
+            const currentBallWeight = style.allowWeightToggle ? customBallWeight : style.ballWeight;
+            const totalDoughWeight = doughCount * currentBallWeight;
             const percentages = style.bakers;
             const totalPercentage = Object.values(percentages).reduce((acc, val) => acc + val, 0);
             const flourWeight = totalDoughWeight / (totalPercentage / 100);
@@ -647,10 +709,11 @@
             let ingredientsHTML = '';
 
             const ingredientLabels = {
-                flour: 'All-Purpose',
+                flour: 'All-Purpose Flour',
                 breadFlour: 'Bread Flour',
                 wholeWheatFlour: 'Whole Wheat Flour',
-                water: 'Water (Lukewarm)',
+                water: 'Water',
+                butter: 'Unsalted Butter (Cold & Cubed)',
                 instantYeast: 'Instant Yeast',
                 salt: 'Fine Sea Salt',
                 sugar: 'Sugar',
@@ -677,20 +740,19 @@
             }
             listEl.innerHTML = ingredientsHTML;
 
-            const targetSizeStr = activeBallWeight === 420 ? '14' : '11';
+            const pieSize = currentBallWeight === 420 ? '14' : '11';
             const instrContent = document.getElementById('dough-instructions-content');
             instrContent.innerHTML = `
                 <ol class="space-y-3.5 sm:space-y-4">
                     ${style.instructions.map((step, idx) => {
-                        const formattedStep = step
-                            .replace('{WEIGHT}', activeBallWeight)
-                            .replace('{SIZE}', targetSizeStr);
+                        let formattedStep = step.replace('{WEIGHT}', currentBallWeight).replace('{SIZE}', pieSize);
                         return `
-                        <li class="flex items-start space-x-3.5 text-sm sm:text-base text-slate-600 dark:text-slate-300">
-                            <span class="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold text-xs sm:text-sm flex items-center justify-center">${idx + 1}</span>
-                            <span class="flex-1 mt-0.5">${formattedStep}</span>
-                        </li>
-                    `}).join('')}
+                            <li class="flex items-start space-x-3.5 text-sm sm:text-base text-slate-600 dark:text-slate-300">
+                                <span class="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold text-xs sm:text-sm flex items-center justify-center">${idx + 1}</span>
+                                <span class="flex-1 mt-0.5">${formattedStep}</span>
+                            </li>
+                        `;
+                    }).join('')}
                 </ol>
             `;
             lucide.createIcons();
